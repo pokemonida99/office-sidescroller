@@ -4,6 +4,7 @@
 
 - 只有「跳」和「滑壘」（使用者 2026-10-22 選了「純跑酷」，不做揍人）。
 - 不做登入、儲值、等時間、社交；只存最佳距離（localStorage）。
+- **線上玩**：https://pokemonida99.github.io/office-sidescroller/（公開 repo pokemonida99/office-sidescroller，push main 就部署；**之後 push 前先問使用者**）。改 js 要一起改所有 `?v=` 字尾（index.html 與各 js 的 import 要一致）和 main.js 的 VERSION。
 
 ## 怎麼玩
 | | 手機 | 電腦 |
@@ -40,4 +41,3 @@
 ## 還沒做（之後可以加）
 - 可選角色（小米、阿傑、Vivi 也來跑）。
 - 真正的關卡模式／關底。
-- 上線 GitHub Pages（要先問使用者）。
