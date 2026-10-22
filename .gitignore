@@ -1,0 +1,4 @@
+# 角色三視圖原圖只留本機
+design/*.png
+.DS_Store
+node_modules/
