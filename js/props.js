@@ -1,6 +1,6 @@
 // 跑酷道具：障礙物、收集物、各樓層的背景。全部用程式做的圓角方塊，跟上班啟示錄同一個玩具感
 import * as THREE from 'three';
-import { scene, rbox, box, cyl, sphere, mat, canvasTex, labelSprite, roundRect, FONT, V, geo } from './world.js?v=0.1.0';
+import { scene, rbox, box, cyl, sphere, mat, canvasTex, labelSprite, roundRect, FONT, V, geo } from './world.js?v=0.1.1';
 
 const glowMat = (c) => new THREE.MeshBasicMaterial({ color: c, toneMapped: false });
 const chrome = { metalness: 0.85, roughness: 0.25 };

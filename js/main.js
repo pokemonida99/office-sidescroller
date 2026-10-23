@@ -1,13 +1,13 @@
 // 上班啟示錄：打卡衝衝衝 —— 小葵自動往右跑，跳、滑壘閃障礙。撞到一次 Kevin 會追上來，追的時候再撞就被抓走
 import * as THREE from 'three';
-import { scene, render, updateCamera, cam, viewWidth, labelSprite, V } from './world.js?v=0.1.0';
-import { loadKind, makeActor, addJog, updateActor } from './assets.js?v=0.1.0';
-import * as fx from './fx.js?v=0.1.0';
-import { L, resetLevel, updateLevel, animateLevel, zoneAt, floorName, ZONE_LEN, ZONES } from './level.js?v=0.1.0';
-import { hoverboard } from './props.js?v=0.1.0';
-import { music, musicStart, musicStop, musicTick } from './music.js?v=0.1.0';
+import { scene, render, updateCamera, cam, viewWidth, labelSprite, V, quality, setQuality, setQualityPref } from './world.js?v=0.1.1';
+import { loadKind, makeActor, addJog, updateActor } from './assets.js?v=0.1.1';
+import * as fx from './fx.js?v=0.1.1';
+import { L, resetLevel, updateLevel, animateLevel, zoneAt, floorName, ZONE_LEN, ZONES } from './level.js?v=0.1.1';
+import { hoverboard } from './props.js?v=0.1.1';
+import { music, musicStart, musicStop, musicTick } from './music.js?v=0.1.1';
 
-const VERSION = '0.1.0';
+const VERSION = '0.1.1';
 document.getElementById('ver').textContent = 'v' + VERSION;
 
 // ---------- 數值（調手感只改這裡） ----------
@@ -427,10 +427,26 @@ function overhead() {
   return false;
 }
 
+// ---------- 畫質：自動模式下，跑的時候每 3 秒算一次幀率，連兩次低於 40 就切成「流暢」 ----------
+const fpsMon = { wait: 2, t: 0, n: 0, bad: 0 };
+function watchFps(dt) {
+  if (quality.pref !== 'auto' || quality.level === 'low' || S.mode !== 'run' || G.hold || document.hidden || dt > 0.25) return;
+  if ((fpsMon.wait -= dt) > 0) return;
+  fpsMon.t += dt; fpsMon.n++;
+  if (fpsMon.t < 3) return;
+  const fps = fpsMon.n / fpsMon.t; fpsMon.t = fpsMon.n = 0;
+  fpsMon.bad = fps < 40 ? fpsMon.bad + 1 : 0;
+  if (fpsMon.bad >= 2) { setQuality('low'); updateQBtn(); fx.toast('畫面有點卡，已切換成「流暢」畫質'); }
+}
+const qBtn = $('qBtn'), Q_NAME = { auto: '自動', high: '漂亮', low: '流暢' };
+function updateQBtn() { qBtn.textContent = `🎨 畫質：${Q_NAME[quality.pref]}` + (quality.pref === 'auto' ? `（現在${Q_NAME[quality.level]}）` : ''); }
+qBtn.onclick = (e) => { e.stopPropagation(); setQualityPref({ auto: 'high', high: 'low', low: 'auto' }[quality.pref]); fpsMon.bad = 0; updateQBtn(); };
+
 // ---------- 主迴圈 ----------
 let last = performance.now();
 function frame(now) {
   requestAnimationFrame(frame);
+  watchFps((now - last) / 1000);
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   if (S.mode === 'load') return;
   if (S.mode !== 'pause' && !G.hold) step(dt);
@@ -468,7 +484,8 @@ const G = window.G = {
 // ---------- 開始 ----------
 (async () => {
   try { await loadAll(); }
-  catch (e) { $('loading').textContent = '載入失敗，請重新整理'; console.error(e); return; }
+  catch (e) { $('loading').textContent = '載入失敗，請重新整理'; console.error(e); window.bootFail?.('角色模型下載失敗', '網路可能不穩，重新整理再試一次。（' + (e.message || e) + '）'); return; }
+  window.bootOk?.(); updateQBtn();
   buildCast();
   newRun();
   $('loading').remove();

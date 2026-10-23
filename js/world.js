@@ -8,8 +8,15 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
+// 畫質：漂亮（柔光後製、2 倍解析度、大陰影）／流暢（直接畫不做後製、1.25 倍解析度、小陰影）
+// 偏好存在 localStorage：auto（預設：核心少或記憶體小的手機先用流暢，main.js 開玩後再看幀率調）、high、low
+const Q_KEY = 'office-sidescroller-quality';
+const weak = matchMedia('(pointer: coarse)').matches && ((navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 3);
+export const quality = { pref: 'auto', level: 'high', weak };
+try { const v = localStorage.getItem(Q_KEY); if (['auto', 'high', 'low'].includes(v)) quality.pref = v; } catch {}
+quality.level = quality.pref === 'auto' ? (weak ? 'low' : 'high') : quality.pref;
 export const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, quality.level === 'low' ? 1.25 : 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -53,6 +60,18 @@ composer.addPass(grade);
 composer.addPass(new OutputPass());
 export const post = { composer, bloom, grade, on: true };
 export function render() { if (post.on) composer.render(); else renderer.render(scene, camera); }
+export function setQuality(level) {
+  quality.level = level; const low = level === 'low';
+  renderer.setPixelRatio(Math.min(devicePixelRatio, low ? 1.25 : 2)); renderer.setSize(innerWidth, innerHeight);
+  composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(innerWidth, innerHeight);
+  post.on = !low;
+  const m = low ? 1024 : 2048; sun.shadow.mapSize.set(m, m); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; }
+}
+export function setQualityPref(pref) {
+  quality.pref = pref; try { localStorage.setItem(Q_KEY, pref); } catch {}
+  setQuality(pref === 'auto' ? (weak ? 'low' : 'high') : pref);
+}
+setQuality(quality.level);
 
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();

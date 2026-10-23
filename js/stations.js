@@ -1,6 +1,6 @@
 // 設施：咖啡機、印表機、電話總機、販賣機、員工餐廳三攤。每一級外觀不同、數值不同，咖啡機與印表機 Lv5 是產線
 import * as THREE from 'three';
-import { scene, rbox, box, cyl, sphere, mat, canvasTex, labelSprite, FONT, V } from './world.js?v=0.1.0';
+import { scene, rbox, box, cyl, sphere, mat, canvasTex, labelSprite, FONT, V } from './world.js?v=0.1.1';
 
 // ---------- 數值表（調平衡只改這裡） ----------
 // brew：幾秒做一個；tray：出貨口最多堆幾個；price：一個賣幾元；cost：升到這一級要多少錢

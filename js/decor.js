@@ -1,6 +1,6 @@
 // 外觀：採購部攤位、辦公室裝潢、小葵的推車、VIP 配件、尾牙舞台、生日蛋糕
 import * as THREE from 'three';
-import { rbox, box, cyl, sphere, mat, canvasTex, labelSprite, FONT, V } from './world.js?v=0.1.0';
+import { rbox, box, cyl, sphere, mat, canvasTex, labelSprite, FONT, V } from './world.js?v=0.1.1';
 
 const gold = { metalness: 0.9, roughness: 0.3 };
 const glow = (c) => new THREE.MeshBasicMaterial({ color: c, toneMapped: false });

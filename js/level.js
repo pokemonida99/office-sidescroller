@@ -1,9 +1,9 @@
 // 關卡：一路往右生成背景（主樓層＋上下樓層剖面）、障礙物、鈔票。跑過去的就拆掉
 import * as THREE from 'three';
-import { scene, rbox, box, cyl, sphere, mat, labelSprite, V, geo } from './world.js?v=0.1.0';
-import { OBST, THEMES, wallTex, floorTex, storyTex, makeBill, makeCoffee, makeBadge, punchClock } from './props.js?v=0.1.0';
-import { LOOKS, vendingLook, deskLook } from './stations.js?v=0.1.0';
-import * as fx from './fx.js?v=0.1.0';
+import { scene, rbox, box, cyl, sphere, mat, labelSprite, V, geo } from './world.js?v=0.1.1';
+import { OBST, THEMES, wallTex, floorTex, storyTex, makeBill, makeCoffee, makeBadge, punchClock } from './props.js?v=0.1.1';
+import { LOOKS, vendingLook, deskLook } from './stations.js?v=0.1.1';
+import * as fx from './fx.js?v=0.1.1';
 
 export const SEG = 8;              // 背景一段幾公尺
 export const ZONE_LEN = 240;       // 一區多長（終點有打卡鐘）

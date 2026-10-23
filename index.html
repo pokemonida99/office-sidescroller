@@ -9,6 +9,39 @@
 <title>上班啟示錄：打卡衝衝衝</title>
 <link rel="apple-touch-icon" href="icons/kui-180.png">
 <link rel="icon" type="image/png" href="icons/kui-192.png">
+<script>
+  // 開不起來時說清楚原因（不支援 3D、App 內建瀏覽器、檔案下載失敗、載入太久），不要一直停在「載入中…」
+  (() => {
+    const inApp = /Line\/|FBAN|FBAV|FB_IAB|Instagram|MicroMessenger|; wv\)/i.test(navigator.userAgent);
+    const tip = inApp ? '你現在是用 App 內建的瀏覽器開的，請點右上角「⋯」選「用瀏覽器開啟」，或按「複製網址」貼到 Chrome／Safari。'
+      : '請用最新版的 Chrome 或 Safari 開啟。Android 可以到 Play 商店更新「Chrome」和「Android System WebView」。';
+    let level = 0;   // 0 沒顯示、1 可以再等等、2 開不起來
+    window.bootFail = (title, detail, fatal = true) => {
+      if (window.__booted || level >= (fatal ? 2 : 1)) return; level = fatal ? 2 : 1;
+      const put = () => {
+        const el = document.getElementById('bootMsg'); if (!el) return;
+        el.querySelector('h3').textContent = title; el.querySelector('.d').textContent = detail || ''; el.querySelector('.t').textContent = tip;
+        el.querySelector('.wait').style.display = fatal ? 'none' : ''; el.classList.add('on');
+      };
+      document.readyState === 'loading' ? addEventListener('DOMContentLoaded', put) : put();
+    };
+    window.bootOk = () => { window.__booted = true; const el = document.getElementById('bootMsg'); if (el) el.classList.remove('on'); };
+    let gl2 = false; try { gl2 = !!document.createElement('canvas').getContext('webgl2'); } catch {}
+    if (!gl2) bootFail('這支手機開不了 3D 畫面', '遊戲需要「WebGL2」3D 繪圖功能，這個瀏覽器沒有提供（太舊、或被 App 內建瀏覽器關掉了）。');
+    // 太舊的瀏覽器不認得 importmap：補上 es-module-shims（新瀏覽器不會載）
+    const shim = !(window.HTMLScriptElement && HTMLScriptElement.supports && HTMLScriptElement.supports('importmap'));
+    if (shim) { const sc = document.createElement('script'); sc.async = true; sc.src = 'vendor/es-module-shims.js'; document.head.appendChild(sc); }
+    addEventListener('error', (e) => {
+      if (window.__booted) return;
+      const t = e.target;
+      if (t && t !== window && (t.src || t.href)) return bootFail('有檔案下載失敗', '網路可能不穩，重新整理再試一次。');
+      if (shim && /specifier|resolve|import/i.test(e.message || '')) return;   // 補丁會自己重新載入
+      bootFail('遊戲載入失敗', e.message);
+    }, true);
+    addEventListener('unhandledrejection', (e) => { if (!window.__booted) bootFail('遊戲載入失敗', String((e.reason && e.reason.message) || e.reason)); });
+    setTimeout(() => { if (!window.__booted) bootFail('載入比較久……', '可能是網路比較慢，可以再等一下，或重新整理試試。', false); }, 25000);
+  })();
+</script>
 <style>
   * { box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; overflow: hidden; background: #bfe6ff; font-family: -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; touch-action: none; overscroll-behavior: none; }
@@ -79,9 +112,27 @@
   @keyframes pulse2 { to { transform: scale(1.08); } }
   .quote { background: #e0413b; color: #fff; display: inline-block; padding: 6px 14px; border-radius: 14px; font-weight: 900; margin-top: 4px; }
   #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #bfe6ff; z-index: 20; font-weight: 900; color: #2c3e57; font-size: 18px; }
+  /* 開不起來時的說明卡 */
+  .qbtn { display: block; margin: 10px auto 0; border: 0; border-radius: 14px; padding: 6px 14px; font: inherit; font-size: 13px; font-weight: 800; background: #fff3e0; color: #8a4b1f; }
+  #bootMsg { position: fixed; inset: 0; z-index: 99; display: none; align-items: center; justify-content: center; background: #2c3e57cc; padding: 20px; }
+  #bootMsg.on { display: flex; }
+  #bootMsg .card { width: min(360px, 100%); background: #fffdf7; border-radius: 22px; padding: 20px 18px 16px; color: #2c3e57; text-align: center; box-shadow: 0 10px 30px #0005; -webkit-user-select: text; user-select: text; }
+  #bootMsg h3 { margin: 0 0 8px; font-size: 20px; color: #e0473a; }
+  #bootMsg .d { font-size: 14px; line-height: 1.6; margin: 0 0 8px; font-weight: 700; }
+  #bootMsg .t { font-size: 13px; line-height: 1.6; margin: 0 0 14px; color: #6a5a48; }
+  #bootMsg .row { display: flex; gap: 8px; }
+  #bootMsg button { flex: 1; font: inherit; font-weight: 900; font-size: 15px; border: 0; border-radius: 14px; padding: 11px 8px; background: #ff5d3a; color: #fff; box-shadow: 0 4px 0 #b8381c; }
+  #bootMsg button.sec { background: #fff; color: #2c3e57; box-shadow: 0 4px 0 #0002, 0 0 0 2px #e4d6c2 inset; }
+  #bootMsg .wait { font-size: 12px; margin-top: 10px; color: #8a7a66; }
 </style>
 </head>
 <body>
+<div id="bootMsg"><div class="card">
+  <h3></h3><p class="d"></p><p class="t"></p>
+  <div class="row"><button onclick="location.reload()">重新整理</button><button class="sec" onclick="navigator.clipboard && navigator.clipboard.writeText(location.href.split('#')[0]).then(() => this.textContent = '已複製 ✓', () => prompt('複製這個網址', location.href.split('#')[0]))">複製網址</button></div>
+  <div class="wait">還在載入的話，好了這張卡會自己消失</div>
+</div></div>
+
 <div id="loading">小葵準備上班中…</div>
 <div id="pads"><div id="padL"><div class="key" id="keyL"><b>⬇</b>滑壘</div></div><div id="padR"><div class="key" id="keyR"><b>⬆</b>跳</div></div></div>
 <div id="hud">
@@ -103,6 +154,7 @@
   <div class="howto"><div><b>⬆</b>點右半邊＝跳<br>空中再點＝二段跳</div><div><b>⬇</b>點左半邊＝滑壘<br>鑽過布條和無人機</div><div><b>☕</b>咖啡<br>衝刺無敵 3 秒</div><div><b>🪪</b>員工證<br>擋一次碰撞</div></div>
   <span class="best" id="bestTitle">最佳紀錄 0 m</span>
   <button class="big" id="bStart">開始衝！</button>
+  <button class="qbtn" id="qBtn">🎨 畫質：自動</button>
 </div></div>
 
 <div class="screen" id="sPause"><div class="card">
@@ -123,8 +175,8 @@
 </div></div>
 
 <script type="importmap">
-{"imports":{"three":"https://unpkg.com/three@0.170.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.170.0/examples/jsm/"}}
+{"imports":{"three":"./vendor/three/build/three.module.min.js","three/addons/":"./vendor/three/examples/jsm/"}}
 </script>
-<script type="module" src="js/main.js?v=0.1.0"></script>
+<script type="module" src="js/main.js?v=0.1.1"></script>
 </body>
 </html>
